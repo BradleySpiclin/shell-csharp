@@ -3,10 +3,12 @@ public class Program
     // This is fine for now we'll see how it grows over time
     public static readonly HashSet<string> ValidCommands =
     [
-        Exit
+        Exit,
+        Echo
     ];
 
     public const string Exit = "exit";
+    public const string Echo = "echo";
 
     static void Main()
     {
@@ -33,6 +35,11 @@ public class Program
 
                 // Console.WriteLine($"{Exit}");
                 Environment.Exit(0);
+            }
+
+            if (parts[0] == Echo)
+            {
+                Console.WriteLine($"{string.Join(" ", parts.Skip(1))}");
             }
         }
     }
