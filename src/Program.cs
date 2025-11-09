@@ -1,8 +1,12 @@
 public class Program
 {
-    private static readonly HashSet<string> Commands =
+    // This is fine for now we'll see how it grows over time
+    public static readonly HashSet<string> ValidCommands =
     [
+        Exit
     ];
+
+    public const string Exit = "exit";
 
     static void Main()
     {
@@ -10,10 +14,25 @@ public class Program
         {
             Console.Write("$ ");
             var input = Console.ReadLine();
+            var parts = input?.Split(' ').ToArray();
 
-            if (!Commands.Contains(input ?? string.Empty))
+            if (!ValidCommands.Contains(parts?[0] ?? string.Empty))
             {
                 Console.WriteLine($"{input}: command not found");
+                continue;
+            }
+
+            // Bit of a hack lets parse the command properly when I have time
+            if (parts[0] == Exit)
+            {
+                if (parts.Length > 1)
+                {
+                    Console.WriteLine($"{Exit} {parts[1]}");
+                    Environment.Exit(int.Parse(parts[1]));
+                }
+
+                Console.WriteLine($"{Exit}");
+                Environment.Exit(0);
             }
         }
     }
