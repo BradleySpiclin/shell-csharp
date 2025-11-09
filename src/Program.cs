@@ -25,13 +25,13 @@ public class Program
             // Bit of a hack lets parse the command properly when I have time
             if (parts[0] == Exit)
             {
-                if (parts.Length > 1)
-                {
-                    Console.WriteLine($"{Exit} {parts[1]}");
-                    Environment.Exit(int.Parse(parts[1]));
-                }
+                // if (parts.Length > 1)
+                // {
+                //     Console.WriteLine($"{Exit} {parts[1]}");
+                //     Environment.Exit(int.Parse(parts[1]));
+                // }
 
-                Console.WriteLine($"{Exit}");
+                // Console.WriteLine($"{Exit}");
                 Environment.Exit(0);
             }
         }
