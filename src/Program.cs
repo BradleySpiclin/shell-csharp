@@ -11,7 +11,7 @@ public class Program
 
         if (!Commands.Contains(input ?? string.Empty))
         {
-            Console.WriteLine("command not found");
+            Console.WriteLine($"{input}: command not found");
         }
     }
 }
