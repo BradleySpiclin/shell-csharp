@@ -6,12 +6,15 @@ public class Program
 
     static void Main()
     {
-        Console.Write("$ ");
-        var input = Console.ReadLine();
-
-        if (!Commands.Contains(input ?? string.Empty))
+        while (true)
         {
-            Console.WriteLine($"{input}: command not found");
+            Console.Write("$ ");
+            var input = Console.ReadLine();
+
+            if (!Commands.Contains(input ?? string.Empty))
+            {
+                Console.WriteLine($"{input}: command not found");
+            }
         }
     }
 }
