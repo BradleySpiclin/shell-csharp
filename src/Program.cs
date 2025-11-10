@@ -1,14 +1,17 @@
+namespace src;
+
 public class Program
 {
-    // This is fine for now we'll see how it grows over time
     public static readonly HashSet<string> ValidCommands =
     [
         Exit,
-        Echo
+        Echo,
+        Type
     ];
 
     public const string Exit = "exit";
     public const string Echo = "echo";
+    public const string Type = "type";
 
     static void Main()
     {
@@ -40,6 +43,17 @@ public class Program
             if (parts[0] == Echo)
             {
                 Console.WriteLine($"{string.Join(" ", parts.Skip(1))}");
+            }
+            else if (parts[0] == Type)
+            {
+                if (ValidCommands.Contains(parts[1]))
+                {
+                    Console.WriteLine($"{parts[1]} is a shell builtin");
+                }
+                else
+                {
+                    Console.WriteLine($"{string.Join(" ", parts.Skip(1))}: not found");
+                }
             }
         }
     }
