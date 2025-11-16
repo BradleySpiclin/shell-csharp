@@ -1,8 +1,14 @@
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Cryptography.X509Certificates;
+using Mono.Unix.Native;
+
 namespace src;
 
 public class Program
 {
-    public static readonly HashSet<string> ValidCommands =
+    public static readonly HashSet<string> BuiltinCommands =
     [
         Exit,
         Echo,
@@ -21,10 +27,9 @@ public class Program
             var input = Console.ReadLine();
             var parts = input?.Split(' ').ToArray();
 
-            if (!ValidCommands.Contains(parts?[0] ?? string.Empty))
+            if (!BuiltinCommands.Contains(parts?[0] ?? string.Empty))
             {
                 Console.WriteLine($"{input}: command not found");
-                continue;
             }
 
             // Bit of a hack lets parse the command properly when I have time
@@ -46,9 +51,14 @@ public class Program
             }
             else if (parts[0] == Type)
             {
-                if (ValidCommands.Contains(parts[1]))
+                if (BuiltinCommands.Contains(parts[1]))
                 {
+
                     Console.WriteLine($"{parts[1]} is a shell builtin");
+                }
+                else if (TryGetExecutable(parts[1], out var path))
+                {
+                    Console.WriteLine($"{parts[0]} is {path}");
                 }
                 else
                 {
@@ -56,5 +66,73 @@ public class Program
                 }
             }
         }
+    }
+
+    public static bool TryGetExecutable(string command, out string? path)
+    {
+        path = null;
+        Console.WriteLine($"Command: {command}");
+        var pathVariable = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrEmpty(pathVariable))
+        {
+            var pathDirectories = pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var directory in pathDirectories)
+            {
+                if (!Directory.Exists(directory))
+                    continue;
+
+                foreach (var file in Directory.EnumerateFiles(directory))
+                {
+                    Console.WriteLine($"FILE: {file}");
+                    Console.WriteLine($"COMMAND: {command}");
+                    var fileFromPath = file.Split('/').Last();
+                    Console.WriteLine($"FILE FROM PATH: {fileFromPath}");
+                    if (fileFromPath == command && IsExecutable(file))
+                    {
+                        path = file;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        static bool IsExecutable(string filePath)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var ext = Path.GetExtension(filePath).ToUpperInvariant();
+
+                var pathExt = Environment.GetEnvironmentVariable("PATHEXT")?
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(e => e.ToUpperInvariant())
+                    .ToHashSet()
+                    ?? new HashSet<string>();
+
+                return pathExt.Contains(ext);
+            }
+            else
+            {
+                var fileInfo = new FileInfo(filePath);
+                if (!fileInfo.Exists)
+                    return false;
+
+                try
+                {
+                    var mode = Syscall.stat(filePath, out var stat);
+                    if (mode == 0)
+                    {
+                        return (stat.st_mode &
+                            (FilePermissions.S_IXUSR |
+                             FilePermissions.S_IXGRP |
+                             FilePermissions.S_IXOTH)) != 0;
+                    }
+                }
+                catch { }
+
+                return false;
+            }
+        }
+
+        return false;
     }
 }
